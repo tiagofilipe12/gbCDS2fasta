@@ -3,20 +3,20 @@
 ## Last update: 24/1/2017
 ## Author: T.F. Jesus
 ## This script retrieves CDS data from .gb files to a fasta in which each CDS is a sequence entry
-## Untested script and lacks some functions
+
 
 import argparse
 import os
 from Bio import SeqIO
 
 def header_fix(input_header):
-	problematic_characters = ["|", " ", ",", ".", "(", ")", "'", "/"]
+	problematic_characters = ["|", " ", ",", ".", "(", ")", "'", "/","[","]"]
 	for char in problematic_characters:
 		input_header=input_header.replace(char, '_')
 	return input_header
 
 def reverse_complement(sequence):
-    rc_dictionary = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}
+    rc_dictionary = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C', 'N': 'N'}
     return "".join([rc_dictionary[base] for base in reversed(sequence)])
 
 def genbank_file_reader(input_dir, output_file):	
@@ -31,13 +31,12 @@ def genbank_file_reader(input_dir, output_file):
 			seq_id = record.id
 			tag_name = "ref_" + seq_id + "_" + seq_description + "_"  
 			for feat in record.features:
-#				strand = feat.location.strand
 				seq_type = feat.type
 				if seq_type == "CDS":
 					cds_tag_name = ""
 					location = str(feat.location) ## did not use .start and .end because it does not retrieve properly when DNA sequence is circular
 					for key in feat.qualifiers.keys():
-						cds_tag_name = tag_name + "CDS_" + location
+						cds_tag_name = tag_name + "CDS_" + header_fix(location)
 					cds_gene_position[cds_tag_name] = location
 			cds2fasta(out_handle, cds_gene_position, sequence)	
 
@@ -45,7 +44,6 @@ def cds2fasta(out_handle, cds_gene_position, sequence):
 	counter_start = 0
 	counter_end = 0
 	for k in cds_gene_position.keys():
-		print k		
 		start_location = cds_gene_position[k].split(":")[0].lstrip("[")
 		end_location = cds_gene_position[k].split(":")[1].split("]")[0]
 		complement = cds_gene_position[k].split(":")[1].split("]")[1] ## (+) or (-)
