@@ -10,7 +10,7 @@ import os
 from Bio import SeqIO
 
 def header_fix(input_header):
-	problematic_characters = ["|", " ", ",", ".", "(", ")", "'", "/","[","]"]
+	problematic_characters = ["|", " ", ",", ".", "(", ")", "'", "/","[","]",":"]
 	for char in problematic_characters:
 		input_header=input_header.replace(char, '_')
 	return input_header
@@ -36,7 +36,7 @@ def genbank_file_reader(input_dir, output_file):
 					cds_tag_name = ""
 					location = str(feat.location) ## did not use .start and .end because it does not retrieve properly when DNA sequence is circular
 					for key in feat.qualifiers.keys():
-						cds_tag_name = tag_name + "CDS_" + header_fix(location)
+						cds_tag_name = tag_name + "CDS_" + location
 					cds_gene_position[cds_tag_name] = location
 			cds2fasta(out_handle, cds_gene_position, sequence)	
 
@@ -53,7 +53,7 @@ def cds2fasta(out_handle, cds_gene_position, sequence):
 		if ">" or "<" in end_location:
 			counter_end =+ 1
 			end_location = end_location.lstrip("<").lstrip(">")
-		out_handle.write(">" + k + "\n")
+		out_handle.write(">" + header_fix(k) + "\n")
 		if "(-)" in complement:
 			out_handle.write(reverse_complement(sequence[int(start_location):int(end_location)]) + "\n")
 		elif "(+)" in complement: 
