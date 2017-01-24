@@ -15,6 +15,10 @@ def header_fix(input_header):
 		input_header=input_header.replace(char, '_')
 	return input_header
 
+def reverse_complement(sequence):
+    rc_dictionary = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}
+    return "".join([rc_dictionary[base] for base in reversed(sequence)])
+
 def genbank_file_reader(input_dir, output_file):	
 	out_handle=open(output_file,'w')
 	for infile in os.listdir(input_dir):
@@ -35,7 +39,6 @@ def genbank_file_reader(input_dir, output_file):
 					for key in feat.qualifiers.keys():
 						cds_tag_name = tag_name + "CDS_" + location
 					cds_gene_position[cds_tag_name] = location
-					print cds_tag_name
 			cds2fasta(out_handle, cds_gene_position, sequence)	
 
 def cds2fasta(out_handle, cds_gene_position, sequence):
@@ -53,7 +56,11 @@ def cds2fasta(out_handle, cds_gene_position, sequence):
 			counter_end =+ 1
 			end_location = end_location.lstrip("<").lstrip(">")
 		out_handle.write(">" + k + "\n")
-		out_handle.write(sequence[int(start_location):int(end_location)] + "\n")
+		if "(-)" in complement:
+			out_handle.write(reverse_complement(sequence[int(start_location):int(end_location)]) + "\n")
+		elif "(+)" in complement: 
+			out_handle.write(sequence[int(start_location):int(end_location)] + "\n")
+	return counter_start, counter_end
 
 def main():
 	parser = argparse.ArgumentParser(description="Converts all CDS in a .gb file into a fasta with each CDS region as an individual sequence")
