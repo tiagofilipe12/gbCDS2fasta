@@ -113,9 +113,9 @@ def cds2fasta(out_handle, cds_gene_position, sequence, fastasequence_dict, seq_i
 
 def main():
 	parser = argparse.ArgumentParser(description="Converts all CDS in a .gb file into a fasta with each CDS region as an individual sequence")
-	parser.add_argument('-in','--input', dest='inputdir', nargs='+', required=True, help='Provide the input directory with .gb (GenBank) files to parse')
-	parser.add_argument('-f','--fasta', dest='fastahelper', nargs='+', help='If, for some reasion, your .gb file does not have the sequence data you need, you can use this option that allow to provide a fasta with the same accession numbers of the entries on the.gb file you are trying to convert into single CDS fastas')
-	parser.add_argument('-out','--output', dest='outputfile', required=True, help='Provide the output file name')
+	parser.add_argument('-in','--input', dest='inputdir', nargs='+', required=True, help='Provide the input directory with .gb (GenBank) files to parse.')
+	parser.add_argument('-f','--fasta', dest='fastahelper', nargs='+', help='If, for some reason, your .gb file does not have the nucleotide sequence data you need, you can use this option. It allows to provide a fasta with the same accession numbers as the .gb file that you are trying to converto into single CDS fasta sequences.')
+	parser.add_argument('-out','--output', dest='outputfile', required=True, help='Provide the output file name.')
 	args = parser.parse_args()
 	list_of_gb = args.inputdir
 	list_of_fasta = args.fastahelper
