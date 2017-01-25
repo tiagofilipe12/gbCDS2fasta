@@ -10,7 +10,7 @@ import os
 from Bio import SeqIO
 
 def header_fix(input_header):
-	problematic_characters = ["|", " ", ",", ".", "(", ")", "'", "/","[","]",":"]
+	problematic_characters = ["|", " ", ",", ".", "(", ")", "'", "/","[","]",":","{","}"]
 	for char in problematic_characters:
 		input_header=input_header.replace(char, '_')
 	return input_header
@@ -38,26 +38,31 @@ def genbank_file_reader(input_dir, output_file):
 					for key in feat.qualifiers.keys():
 						cds_tag_name = tag_name + "CDS_" + location
 					cds_gene_position[cds_tag_name] = location
-			cds2fasta(out_handle, cds_gene_position, sequence)	
+			counter_start, counter_end = cds2fasta(out_handle, cds_gene_position, sequence)
+	return counter_start, counter_end
 
 def cds2fasta(out_handle, cds_gene_position, sequence):
 	counter_start = 0
 	counter_end = 0
 	for k in cds_gene_position.keys():
-		start_location = cds_gene_position[k].split(":")[0].lstrip("[")
-		end_location = cds_gene_position[k].split(":")[1].split("]")[0]
-		complement = cds_gene_position[k].split(":")[1].split("]")[1] ## (+) or (-)
-		if ">" or "<" in start_location:
-			counter_start =+1
-			start_location = start_location.lstrip("<").lstrip(">")
-		if ">" or "<" in end_location:
-			counter_end =+ 1
-			end_location = end_location.lstrip("<").lstrip(">")
+		cat_sequences = []
+		initial_trim = cds_gene_position[k].lstrip("join{").rstrip("}")
+		for entry in initial_trim.split(","):
+			start_location = entry.split(":")[0].lstrip(" ").lstrip("[")
+			end_location = entry.split(":")[1].split("]")[0]
+			complement = entry.split(":")[1].split("]")[1] ## (+) or (-)
+			if ">" or "<" in start_location:
+				counter_start =+1
+				start_location = start_location.lstrip("<").lstrip(">")
+			if ">" or "<" in end_location:
+				counter_end =+ 1
+				end_location = end_location.lstrip("<").lstrip(">")
+			if "(-)" in complement:
+				cat_sequences.append(reverse_complement(sequence[int(start_location):int(end_location)]))
+			elif "(+)" in complement:
+				cat_sequences.append(sequence[int(start_location):int(end_location)])
 		out_handle.write(">" + header_fix(k) + "\n")
-		if "(-)" in complement:
-			out_handle.write(reverse_complement(sequence[int(start_location):int(end_location)]) + "\n")
-		elif "(+)" in complement: 
-			out_handle.write(sequence[int(start_location):int(end_location)] + "\n")
+		out_handle.write("".join(cat_sequences) + "\n")
 	return counter_start, counter_end
 
 def main():
@@ -67,7 +72,11 @@ def main():
 	args = parser.parse_args()
 	list_of_gb = args.inputfile.split(" ")
 	for gb in list_of_gb:
-		genbank_file_reader(gb, args.outputfile)
+		counter_start, counter_end = genbank_file_reader(gb, args.outputfile)
+	print str(counter_start) + " sequences with starting fuzzy positions. Please refer to http://biopython.org/DIST/docs/tutorial/Tutorial.html#htoc36"
+	print str(counter_end) + " sequences with ending fuzzy positions. Please refer to http://biopython.org/DIST/docs/tutorial/Tutorial.html#htoc36"
+	print "Note: This script does not handle fuzzy locations, rather it takes the location provided by NCBI record for this position."
+
 
 if __name__ == "__main__":
 	main()
