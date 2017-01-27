@@ -58,7 +58,7 @@ def sequencesfromfasta(fasta_files):
 	return fastasequence_dict    
 
 def genbank_file_reader(input_dir, output_file, fastasequence_dict):	
-	out_handle=open(output_file,'w')
+	out_handle=open(output_file + ".fas",'w')
 	for infile in os.listdir(input_dir):
 		if infile.endswith(".gb"):
 			cds_gene_position = {}	
@@ -125,9 +125,11 @@ def main():
 		fastasequence_dict = 0
 	for gb in list_of_gb:
 		counter_start, counter_end = genbank_file_reader(gb, args.outputfile, fastasequence_dict)
-	print str(counter_start) + " sequences with starting fuzzy positions. Please refer to http://biopython.org/DIST/docs/tutorial/Tutorial.html#htoc36"
-	print str(counter_end) + " sequences with ending fuzzy positions. Please refer to http://biopython.org/DIST/docs/tutorial/Tutorial.html#htoc36"
+	print
+	print str(counter_start) + " sequences with fuzzy starting positions. Please refer to http://biopython.org/DIST/docs/tutorial/Tutorial.html#htoc36"
+	print str(counter_end) + " sequences with fuzzy ending positions. Please refer to http://biopython.org/DIST/docs/tutorial/Tutorial.html#htoc36"
 	print "Note: This script does not handle fuzzy locations, rather it takes the location provided by NCBI record for this position."
-
+	print 
+	
 if __name__ == "__main__":
 	main()
